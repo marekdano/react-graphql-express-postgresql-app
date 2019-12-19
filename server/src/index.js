@@ -10,11 +10,21 @@ const schema = gql`
     users: [User!]
     user(id: ID!): User
     me: User
+
+    notes: [Note!]
+    note(id: ID!): Note!
   }
 
   type User {
     id: ID!
     username: String!
+    notes: [Note!]
+  }
+
+  type Note {
+    id: ID!
+    text: String!
+    user: User!
   }
 `
 
@@ -22,10 +32,30 @@ let users = {
   1: {
     id: '1',
     username: 'Marek Dano',
+    nodeIds: [1, 2],
   },
   2: {
     id: '2',
     username: 'Laura Danova',
+    nodeIds: [3],
+  },
+}
+
+let notes = {
+  1: {
+    id: '1',
+    text: 'Hello',
+    userId: '1',
+  },
+  2: {
+    id: '2',
+    text: 'Cau',
+    userId: '1',
+  },
+  3: {
+    id: '3',
+    text: 'Ahoy',
+    userId: '2',
   },
 }
 
@@ -39,6 +69,22 @@ const resolvers = {
     },
     me: (parent, args, { me }) => {
       return me
+    },
+    notes: () => {
+      return Object.values(notes)
+    },
+    note: (parent, { id }) => {
+      return notes[id]
+    },
+  },
+  User: {
+    notes: user => {
+      return Object.values(notes).filter(note => note.userId === user.id)
+    },
+  },
+  Note: {
+    user: note => {
+      return users[note.userId]
     },
   },
 }
