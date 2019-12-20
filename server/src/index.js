@@ -1,5 +1,6 @@
 import cors from 'cors'
 import express from 'express'
+import uuidv4 from 'uuid/v4'
 import { ApolloServer, gql } from 'apollo-server-express'
 
 const app = express()
@@ -26,18 +27,23 @@ const schema = gql`
     text: String!
     user: User!
   }
+
+  type Mutation {
+    createNote(text: String!): Note!
+    deleteNote(id: ID!): Boolean!
+  }
 `
 
 let users = {
   1: {
     id: '1',
     username: 'Marek Dano',
-    nodeIds: [1, 2],
+    noteIds: [1, 2],
   },
   2: {
     id: '2',
     username: 'Laura Danova',
-    nodeIds: [3],
+    noteIds: [3],
   },
 }
 
@@ -85,6 +91,28 @@ const resolvers = {
   Note: {
     user: note => {
       return users[note.userId]
+    },
+  },
+  Mutation: {
+    createNote: (parent, { text }, { me }) => {
+      const id = uuidv4()
+      const note = {
+        id,
+        text,
+        userId: me.id,
+      }
+
+      notes[id] = note
+      users[me.id].noteIds.push(id)
+      return note
+    },
+    deleteNote: (parent, { id }) => {
+      const { [id]: note, ...otherNotes } = notes
+      if (!note) {
+        return false
+      }
+      notes = otherNotes
+      return true
     },
   },
 }
