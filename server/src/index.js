@@ -30,6 +30,7 @@ const schema = gql`
 
   type Mutation {
     createNote(text: String!): Note!
+    updateNote(id: ID!, text: String!): Note!
     deleteNote(id: ID!): Boolean!
   }
 `
@@ -105,6 +106,18 @@ const resolvers = {
       notes[id] = note
       users[me.id].noteIds.push(id)
       return note
+    },
+    updateNote: (parent, { id, text }, { me }) => {
+      const { [id]: note, _ } = notes
+      if (!note || note.userId !== me.id) {
+        throw new Error(`Note with ID '${id}' cannot be updated.`)
+      }
+      const updatedNote = {
+        ...note,
+        text,
+      }
+      notes[id] = updatedNote
+      return updatedNote
     },
     deleteNote: (parent, { id }) => {
       const { [id]: note, ...otherNotes } = notes
