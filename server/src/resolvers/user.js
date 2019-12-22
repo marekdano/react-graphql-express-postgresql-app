@@ -1,0 +1,19 @@
+export default {
+  Query: {
+    users: (parent, args, { models }) => {
+      return Object.values(models.users)
+    },
+    user: (parent, { id }, { models }) => {
+      return models.users[id]
+    },
+    me: (parent, args, { me }) => {
+      return me
+    },
+  },
+
+  User: {
+    notes: (user, args, { models }) => {
+      return Object.values(models.notes).filter(note => note.userId === user.id)
+    },
+  },
+}
