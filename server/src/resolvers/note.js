@@ -1,53 +1,37 @@
-import uuidv4 from 'uuid/v4'
+// import uuidv4 from 'uuid/v4'
 
 export default {
   Query: {
-    notes: (parent, args, { models }) => {
-      return Object.values(models.notes)
+    notes: async (parent, args, { models }) => {
+      return await models.Note.findAll()
     },
-    note: (parent, { id }, { models }) => {
-      return models.notes[id]
+    note: async (parent, { id }, { models }) => {
+      return await models.Note.findById(id)
     },
   },
 
   Mutation: {
-    createNote: (parent, { text }, { me, models }) => {
-      const id = uuidv4()
-      const note = {
-        id,
+    createNote: async (parent, { text }, { me, models }) => {
+      return await models.Note.create({
+        // id: uuidv4(),
         text,
         userId: me.id,
-      }
+      })
+    },
 
-      models.notes[id] = note
-      models.users[me.id].noteIds.push(id)
-      return note
+    updateNote: async (parent, { id, text }, { me, models }) => {
+      await models.Note.update({ text }, { where: { id } })
+      return await models.Note.findById(id, { include })
     },
-    updateNote: (parent, { id, text }, { me, models }) => {
-      const { [id]: note, _ } = models.notes
-      if (!note || note.userId !== me.id) {
-        throw new Error(`Note with ID '${id}' cannot be updated.`)
-      }
-      const updatedNote = {
-        ...note,
-        text,
-      }
-      models.notes[id] = updatedNote
-      return updatedNote
-    },
-    deleteNote: (parent, { id }, { models }) => {
-      const { [id]: note, ...otherNotes } = models.notes
-      if (!note) {
-        return false
-      }
-      models.notes = otherNotes
-      return true
+
+    deleteNote: async (parent, { id }, { models }) => {
+      return await models.Note.destroy({ where: { id } })
     },
   },
 
   Note: {
-    user: (note, args, { models }) => {
-      return models.users[note.userId]
+    user: async (note, args, { models }) => {
+      return await models.User.findById(note.userId)
     },
   },
 }

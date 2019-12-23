@@ -1,19 +1,23 @@
 export default {
   Query: {
-    users: (parent, args, { models }) => {
-      return Object.values(models.users)
+    users: async (parent, args, { models }) => {
+      return await models.User.findAll()
     },
-    user: (parent, { id }, { models }) => {
-      return models.users[id]
+    user: async (parent, { id }, { models }) => {
+      return await models.User.findById(id)
     },
-    me: (parent, args, { me }) => {
-      return me
+    me: async (parent, args, { models, me }) => {
+      return await models.User.findById(me.id)
     },
   },
 
   User: {
-    notes: (user, args, { models }) => {
-      return Object.values(models.notes).filter(note => note.userId === user.id)
+    notes: async (user, args, { models }) => {
+      return await models.Note.findAll({
+        where: {
+          userId: user.id,
+        },
+      })
     },
   },
 }
