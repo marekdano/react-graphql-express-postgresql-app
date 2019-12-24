@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import cors from 'cors'
 import express from 'express'
 import { ApolloServer } from 'apollo-server-express'
@@ -27,6 +28,7 @@ const server = new ApolloServer({
   context: async () => ({
     models,
     me: await models.User.findByLogin('marekdano'),
+    secret: process.env.SECRET,
   }),
 })
 
@@ -48,6 +50,8 @@ const createUsersWithMessages = async () => {
   await models.User.create(
     {
       username: 'marekdano',
+      email: 'marekdano@gmail.com',
+      password: '1234567',
       notes: [{ text: 'Hello' }, { text: 'Cau' }],
     },
     {
@@ -57,6 +61,8 @@ const createUsersWithMessages = async () => {
   await models.User.create(
     {
       username: 'lauradanova',
+      email: 'lauradanova@gmail.com',
+      password: '1234567',
       notes: [{ text: 'Ahoy' }],
     },
     {
