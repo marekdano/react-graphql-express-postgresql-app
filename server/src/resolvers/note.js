@@ -1,3 +1,6 @@
+import { combineResolvers } from 'graphql-resolvers'
+import { isAuthenticated, isNoteOwner } from './authorization'
+
 export default {
   Query: {
     notes: async (parent, args, { models }) => {
@@ -9,30 +12,34 @@ export default {
   },
 
   Mutation: {
-    createNote: async (parent, { text }, { me, models }) => {
-      try {
-        return await models.Note.create({
-          text,
-          userId: me.id,
-        })
-      } catch (error) {
-        throw new Error(error)
-      }
-    },
+    createNote: combineResolvers(isAuthenticated, async (parent, { text }, { me, models }) => {
+      return await models.Note.create({
+        text,
+        userId: me.id,
+      })
+    }),
 
-    updateNote: async (parent, { id, text }, { me, models }) => {
-      try {
-        await models.Note.update({ text }, { where: { id, userId: me.id } })
-      } catch (error) {
-        throw new Error(error)
-      }
+    updateNote: combineResolvers(
+      isAuthenticated,
+      isNoteOwner,
+      async (parent, { id, text }, { me, models }) => {
+        try {
+          await models.Note.update({ text }, { where: { id, userId: me.id } })
+        } catch (error) {
+          throw new Error(error)
+        }
 
-      return await models.Note.findByPk(id)
-    },
+        return await models.Note.findByPk(id)
+      },
+    ),
 
-    deleteNote: async (parent, { id }, { models }) => {
-      return await models.Note.destroy({ where: { id } })
-    },
+    deleteNote: combineResolvers(
+      isAuthenticated,
+      isNoteOwner,
+      async (parent, { id }, { models }) => {
+        return await models.Note.destroy({ where: { id } })
+      },
+    ),
   },
 
   Note: {
