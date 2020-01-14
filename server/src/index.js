@@ -67,6 +67,7 @@ const createUsersWithNotes = async () => {
       username: 'marekdano',
       email: 'marekdano@gmail.com',
       password: '1234567',
+      role: 'ADMIN',
       notes: [{ text: 'Hello' }, { text: 'Cau' }],
     },
     {
